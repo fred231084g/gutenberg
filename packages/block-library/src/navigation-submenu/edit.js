@@ -25,6 +25,7 @@ import {
 	InspectorControls,
 	RichText,
 	useBlockProps,
+	useBlockEditingMode,
 	store as blockEditorStore,
 	getColorClassName,
 } from '@wordpress/block-editor';
@@ -46,6 +47,7 @@ import {
 	getNavigationChildBlockProps,
 } from '../navigation/edit/utils';
 import { useToolsPanelDropdownMenuProps } from '../utils/hooks';
+import { ViewPageSidebarButton } from '../navigation-link/shared-view-page-button';
 
 const ALLOWED_BLOCKS = [
 	'core/navigation-link',
@@ -137,7 +139,16 @@ export default function NavigationSubmenuEdit( {
 } ) {
 	const { label, url, description, rel, opensInNewTab } = attributes;
 
-	const { showSubmenuIcon, maxNestingLevel, openSubmenusOnClick } = context;
+	const {
+		showSubmenuIcon,
+		maxNestingLevel,
+		openSubmenusOnClick: contextOpenSubmenusOnClick,
+	} = context;
+	const blockEditingMode = useBlockEditingMode();
+
+	// Force click-only behavior in contentOnly mode to prevent hover dropdowns
+	const openSubmenusOnClick =
+		blockEditingMode !== 'default' ? true : contextOpenSubmenusOnClick;
 
 	const {
 		__unstableMarkNextChangeAsNotPersistent,
@@ -398,6 +409,7 @@ export default function NavigationSubmenuEdit( {
 					} }
 					dropdownMenuProps={ dropdownMenuProps }
 				>
+					<ViewPageSidebarButton attributes={ attributes } />
 					<ToolsPanelItem
 						label={ __( 'Text' ) }
 						isShownByDefault
