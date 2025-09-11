@@ -6,12 +6,13 @@ import clsx from 'clsx';
 /**
  * WordPress dependencies
  */
-import { createBlock } from '@wordpress/blocks';
+import { createBlock, getBlockBindingsSource } from '@wordpress/blocks';
 import { useSelect, useDispatch } from '@wordpress/data';
 import {
 	__experimentalToolsPanel as ToolsPanel,
 	__experimentalToolsPanelItem as ToolsPanelItem,
 	CheckboxControl,
+	SelectControl,
 	TextControl,
 	TextareaControl,
 	ToolbarButton,
@@ -28,6 +29,7 @@ import {
 	getColorClassName,
 	useInnerBlocksProps,
 	useBlockEditingMode,
+	useBlockBindingsUtils,
 } from '@wordpress/block-editor';
 import { isURL, prependHTTP, safeDecodeURI } from '@wordpress/url';
 import { useState, useEffect, useRef } from '@wordpress/element';
@@ -175,7 +177,12 @@ function getMissingText( type ) {
  * packages/block-library/src/navigation-submenu/edit.js
  * Consider reusing this components for both blocks.
  */
-function Controls( { attributes, setAttributes, setIsEditingControl } ) {
+function Controls( {
+	attributes,
+	setAttributes,
+	setIsEditingControl,
+	lockUrlControls = false,
+} ) {
 	const { label, url, description, rel, opensInNewTab } = attributes;
 	const lastURLRef = useRef( url );
 	const dropdownMenuProps = useToolsPanelDropdownMenuProps();
@@ -216,7 +223,11 @@ function Controls( { attributes, setAttributes, setIsEditingControl } ) {
 			<ToolsPanelItem
 				hasValue={ () => !! url }
 				label={ __( 'Link' ) }
-				onDeselect={ () => setAttributes( { url: '' } ) }
+				onDeselect={ () => {
+					if ( ! lockUrlControls ) {
+						setAttributes( { url: '' } );
+					}
+				} }
 				isShownByDefault
 			>
 				<TextControl
@@ -225,17 +236,27 @@ function Controls( { attributes, setAttributes, setIsEditingControl } ) {
 					label={ __( 'Link' ) }
 					value={ url ? safeDecodeURI( url ) : '' }
 					onChange={ ( urlValue ) => {
+						if ( lockUrlControls ) {
+							return; // Prevent editing when URL is bound
+						}
 						setAttributes( {
 							url: encodeURI( safeDecodeURI( urlValue ) ),
 						} );
 					} }
 					autoComplete="off"
 					type="url"
+					disabled={ lockUrlControls }
 					onFocus={ () => {
+						if ( lockUrlControls ) {
+							return;
+						}
 						lastURLRef.current = url;
 						setIsEditingControl( true );
 					} }
 					onBlur={ () => {
+						if ( lockUrlControls ) {
+							return;
+						}
 						// Defer the updateAttributes call to ensure entity connection isn't severed by accident.
 						updateAttributes(
 							{ url: ! url ? lastURLRef.current : url },
@@ -245,6 +266,13 @@ function Controls( { attributes, setAttributes, setIsEditingControl } ) {
 						setIsEditingControl( false );
 					} }
 				/>
+				{ lockUrlControls && (
+					<p className="components-base-control__help">
+						{ __(
+							'This URL is dynamically bound and cannot be edited directly.'
+						) }
+					</p>
+				) }
 			</ToolsPanelItem>
 
 			<ToolsPanelItem
@@ -393,6 +421,33 @@ export default function NavigationLinkEdit( {
 	);
 	const { getBlocks } = useSelect( blockEditorStore );
 
+	// URL binding logic
+	const { metadata } = attributes;
+	const { updateBlockBindings } = useBlockBindingsUtils( clientId );
+
+	const { lockUrlControls = false } = useSelect(
+		( select ) => {
+			if ( ! isSelected ) {
+				return {};
+			}
+
+			const blockBindingsSource = getBlockBindingsSource(
+				metadata?.bindings?.url?.source
+			);
+
+			return {
+				lockUrlControls:
+					!! metadata?.bindings?.url &&
+					! blockBindingsSource?.canUserEditValue?.( {
+						select,
+						context,
+						args: metadata?.bindings?.url?.args,
+					} ),
+			};
+		},
+		[ context, isSelected, metadata?.bindings?.url ]
+	);
+
 	const [ isInvalid, isDraft ] = useIsInvalidLink(
 		kind,
 		type,
@@ -425,7 +480,11 @@ export default function NavigationLinkEdit( {
 			__unstableMarkNextChangeAsNotPersistent();
 			transformToSubmenu();
 		}
-	}, [ hasChildren ] );
+	}, [
+		hasChildren,
+		__unstableMarkNextChangeAsNotPersistent,
+		transformToSubmenu,
+	] );
 
 	// If the LinkControl popover is open and the URL has changed, close the LinkControl and focus the label text.
 	useEffect( () => {
@@ -578,7 +637,48 @@ export default function NavigationLinkEdit( {
 					attributes={ attributes }
 					setAttributes={ setAttributes }
 					setIsEditingControl={ setIsEditingControl }
+					lockUrlControls={ lockUrlControls }
 				/>
+
+				{ /* Simple URL Binding Control */ }
+				<ToolsPanel
+					label={ __( 'Dynamic Content' ) }
+					dropdownMenuProps={ useToolsPanelDropdownMenuProps() }
+				>
+					<ToolsPanelItem
+						hasValue={ () => !! metadata?.bindings?.url }
+						label={ __( 'URL Source' ) }
+						onDeselect={ () =>
+							updateBlockBindings( { url: undefined } )
+						}
+					>
+						<SelectControl
+							__nextHasNoMarginBottom
+							__next40pxDefaultSize
+							label={ __( 'URL Source' ) }
+							value={ metadata?.bindings?.url?.source || '' }
+							options={ [
+								{ label: __( 'Manual URL' ), value: '' },
+								{
+									label: __( 'Current Post URL' ),
+									value: 'core/entity-url',
+								},
+							] }
+							onChange={ ( source ) => {
+								if ( source ) {
+									updateBlockBindings( {
+										url: {
+											source,
+											args: {},
+										},
+									} );
+								} else {
+									updateBlockBindings( { url: undefined } );
+								}
+							} }
+						/>
+					</ToolsPanelItem>
+				</ToolsPanel>
 			</InspectorControls>
 			<div { ...blockProps }>
 				{ /* eslint-disable jsx-a11y/anchor-is-valid */ }

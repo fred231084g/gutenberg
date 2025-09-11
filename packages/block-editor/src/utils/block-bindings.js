@@ -16,6 +16,7 @@ const BLOCK_BINDINGS_ALLOWED_BLOCKS = {
 	'core/heading': [ 'content' ],
 	'core/image': [ 'id', 'url', 'title', 'alt', 'caption' ],
 	'core/button': [ 'url', 'text', 'linkTarget', 'rel' ],
+	'core/navigation-link': [ 'url' ],
 	'core/post-date': [ 'datetime' ],
 };
 
