@@ -11,6 +11,7 @@ import { useSelect, useDispatch } from '@wordpress/data';
 import {
 	__experimentalToolsPanel as ToolsPanel,
 	__experimentalToolsPanelItem as ToolsPanelItem,
+	Button,
 	CheckboxControl,
 	SelectControl,
 	TextControl,
@@ -182,10 +183,26 @@ function Controls( {
 	setAttributes,
 	setIsEditingControl,
 	lockUrlControls = false,
+	updateBlockBindings,
 } ) {
-	const { label, url, description, rel, opensInNewTab } = attributes;
+	const { label, url, description, rel, opensInNewTab, metadata } =
+		attributes;
 	const lastURLRef = useRef( url );
 	const dropdownMenuProps = useToolsPanelDropdownMenuProps();
+
+	// Function to convert from bound to custom link
+	const convertToCustomLink = () => {
+		// Remove the binding
+		updateBlockBindings( { url: undefined } );
+
+		// Remove the id attribute and clear the url
+		setAttributes( {
+			id: undefined,
+			url: '',
+			type: undefined,
+			kind: undefined,
+		} );
+	};
 	return (
 		<ToolsPanel
 			label={ __( 'Settings' ) }
@@ -267,11 +284,21 @@ function Controls( {
 					} }
 				/>
 				{ lockUrlControls && (
-					<p className="components-base-control__help">
-						{ __(
-							'This URL is dynamically bound and cannot be edited directly.'
-						) }
-					</p>
+					<>
+						<Button
+							variant="secondary"
+							size="small"
+							onClick={ convertToCustomLink }
+							style={ { marginTop: '8px' } }
+						>
+							{ __( 'Edit as custom link' ) }
+						</Button>
+						<p className="components-base-control__help">
+							{ __(
+								'This URL is dynamically bound to the selected page. Click "Edit as custom link" to make it editable.'
+							) }
+						</p>
+					</>
 				) }
 			</ToolsPanelItem>
 
@@ -344,7 +371,7 @@ export default function NavigationLinkEdit( {
 	context,
 	clientId,
 } ) {
-	const { id, label, type, url, description, kind } = attributes;
+	const { id, label, type, url, description, kind, metadata } = attributes;
 	const { maxNestingLevel } = context;
 
 	const {
@@ -422,7 +449,6 @@ export default function NavigationLinkEdit( {
 	const { getBlocks } = useSelect( blockEditorStore );
 
 	// URL binding logic
-	const { metadata } = attributes;
 	const { updateBlockBindings } = useBlockBindingsUtils( clientId );
 
 	const { lockUrlControls = false } = useSelect(
@@ -611,16 +637,18 @@ export default function NavigationLinkEdit( {
 		<>
 			<BlockControls>
 				<ToolbarGroup>
-					<ToolbarButton
-						name="link"
-						icon={ linkIcon }
-						title={ __( 'Link' ) }
-						shortcut={ displayShortcut.primary( 'k' ) }
-						onClick={ ( event ) => {
-							setIsLinkOpen( true );
-							setOpenedBy( event.currentTarget );
-						} }
-					/>
+					{ ! lockUrlControls && (
+						<ToolbarButton
+							name="link"
+							icon={ linkIcon }
+							title={ __( 'Link' ) }
+							shortcut={ displayShortcut.primary( 'k' ) }
+							onClick={ ( event ) => {
+								setIsLinkOpen( true );
+								setOpenedBy( event.currentTarget );
+							} }
+						/>
+					) }
 					{ ! isAtMaxNesting && (
 						<ToolbarButton
 							name="submenu"
@@ -638,6 +666,7 @@ export default function NavigationLinkEdit( {
 					setAttributes={ setAttributes }
 					setIsEditingControl={ setIsEditingControl }
 					lockUrlControls={ lockUrlControls }
+					updateBlockBindings={ updateBlockBindings }
 				/>
 
 				{ /* Simple URL Binding Control */ }
@@ -803,6 +832,19 @@ export default function NavigationLinkEdit( {
 									setAttributes,
 									attributes
 								);
+
+								// Auto-bind URL if a post is selected and no binding exists
+								if (
+									updatedValue.id &&
+									! metadata?.bindings?.url
+								) {
+									updateBlockBindings( {
+										url: {
+											source: 'core/entity-url',
+											args: {},
+										},
+									} );
+								}
 							} }
 						/>
 					) }

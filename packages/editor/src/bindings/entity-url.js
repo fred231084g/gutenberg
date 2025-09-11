@@ -8,28 +8,45 @@ export default {
 	name: 'core/entity-url',
 	label: __( 'Entity URL' ),
 	usesContext: [ 'postId', 'postType' ],
-	getValues( { select, context } ) {
-		if ( ! context?.postId || ! context?.postType ) {
+	getValues( { select, clientId } ) {
+		const { getBlockAttributes } = select( 'core/block-editor' );
+
+		// Get the nav link's id attribute
+		const blockAttributes = getBlockAttributes( clientId );
+		const linkedPostId = blockAttributes?.id;
+
+		if ( ! linkedPostId ) {
 			return {};
 		}
 
-		const { getEditedEntityRecord } = select( coreDataStore );
-		const entity = getEditedEntityRecord(
-			'postType',
-			context.postType,
-			context.postId
-		);
+		const { getEntityRecord } = select( coreDataStore );
 
-		if ( ! entity ) {
-			return {};
+		// Get the post type and kind from block attributes
+		const { type, kind } = blockAttributes || {};
+
+		let url = '';
+
+		// Handle post types
+		if ( kind === 'post-type' || type === 'post' || type === 'page' ) {
+			const post = getEntityRecord(
+				'postType',
+				type || 'post',
+				linkedPostId
+			);
+			url = post?.link || '';
+		}
+		// Handle taxonomies
+		else if ( kind === 'taxonomy' ) {
+			const term = getEntityRecord( 'taxonomy', type, linkedPostId );
+			url = term?.link || '';
 		}
 
 		return {
-			url: entity.link || '',
+			url,
 		};
 	},
 	canUserEditValue() {
-		// For MVP, allow editing - in production this should check permissions
-		return true;
+		// Read-only since it's derived from post data
+		return false;
 	},
 };
