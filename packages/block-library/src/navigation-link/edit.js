@@ -33,7 +33,7 @@ import {
 	useBlockBindingsUtils,
 } from '@wordpress/block-editor';
 import { isURL, prependHTTP, safeDecodeURI } from '@wordpress/url';
-import { useState, useEffect, useRef } from '@wordpress/element';
+import { useState, useEffect, useRef, useCallback } from '@wordpress/element';
 import { __unstableStripHTML as stripHTML } from '@wordpress/dom';
 import { decodeEntities } from '@wordpress/html-entities';
 import { link as linkIcon, addSubmenu } from '@wordpress/icons';
@@ -185,8 +185,7 @@ function Controls( {
 	lockUrlControls = false,
 	updateBlockBindings,
 } ) {
-	const { label, url, description, rel, opensInNewTab, metadata } =
-		attributes;
+	const { label, url, description, rel, opensInNewTab } = attributes;
 	const lastURLRef = useRef( url );
 	const dropdownMenuProps = useToolsPanelDropdownMenuProps();
 
@@ -484,7 +483,7 @@ export default function NavigationLinkEdit( {
 	/**
 	 * Transform to submenu block.
 	 */
-	const transformToSubmenu = () => {
+	const transformToSubmenu = useCallback( () => {
 		let innerBlocks = getBlocks( clientId );
 		if ( innerBlocks.length === 0 ) {
 			innerBlocks = [ createBlock( 'core/navigation-link' ) ];
@@ -496,7 +495,7 @@ export default function NavigationLinkEdit( {
 			innerBlocks
 		);
 		replaceBlock( clientId, newSubmenu );
-	};
+	}, [ getBlocks, clientId, selectBlock, replaceBlock, attributes ] );
 
 	useEffect( () => {
 		// If block has inner blocks, transform to Submenu.
