@@ -5,6 +5,9 @@
  * @package WordPress
  */
 
+// Include the Entity URL block bindings source
+require_once __DIR__ . '/entity-url-block-bindings.php';
+
 /**
  * Build an array with CSS classes and inline styles defining the colors
  * which will be applied to the navigation markup in the front-end.
@@ -231,8 +234,30 @@ function render_block_core_navigation_link( $attributes, $content, $block ) {
 		'<a class="wp-block-navigation-item__content" ';
 
 	// Start appending HTML attributes to anchor tag.
-	if ( isset( $attributes['url'] ) ) {
-		$html .= ' href="' . esc_url( block_core_navigation_link_maybe_urldecode( $attributes['url'] ) ) . '"';
+	$url = $attributes['url'] ?? '';
+
+	// Handle block bindings for URL - check if there's a binding and resolve it
+	if ( isset( $attributes['metadata']['bindings']['url'] ) ) {
+		$url_binding = $attributes['metadata']['bindings']['url'];
+		
+		// Use the block bindings system to resolve the URL
+		if ( 'core/entity-url' === $url_binding['source'] ) {
+			$binding_source = get_block_bindings_source( 'core/entity-url' );
+			if ( $binding_source ) {
+				$resolved_url = $binding_source->get_value_callback( 
+					$url_binding['args'] ?? array(), 
+					$block, 
+					'url' 
+				);
+				if ( $resolved_url ) {
+					$url = $resolved_url;
+				}
+			}
+		}
+	}
+
+	if ( ! empty( $url ) ) {
+		$html .= ' href="' . esc_url( block_core_navigation_link_maybe_urldecode( $url ) ) . '"';
 	}
 
 	if ( $is_active ) {
