@@ -78,10 +78,10 @@ function BlockBindingsPanelMenuContent( {
 			{ Object.entries( sources )
 				.filter( ( [ , source ] ) => {
 					// Only show sources that have compatible data for this specific attribute
-					const sourceDataItems = Object.entries(
-						source.data
-					).filter( ( [ , args ] ) => args?.type === attributeType );
-					return sourceDataItems.length > 0;
+					const sourceDataItems = source.data?.filter(
+						( item ) => item?.type === attributeType
+					);
+					return sourceDataItems && sourceDataItems.length > 0;
 				} )
 				.map( ( [ sourceKey, source ] ) => {
 					// Always render the same structure, but conditionally show content
@@ -95,14 +95,14 @@ function BlockBindingsPanelMenuContent( {
 								</Menu.SubmenuTriggerItem>
 								<Menu.Popover gutter={ 8 }>
 									<Menu.Group>
-										{ Object.entries( source.data )
-											.filter(
-												( [ , args ] ) =>
-													args?.type === attributeType
+										{ source.data
+											?.filter(
+												( item ) =>
+													item?.type === attributeType
 											)
-											.map( ( [ , args ] ) => (
+											.map( ( item ) => (
 												<Menu.RadioItem
-													key={ args.key }
+													key={ item.key }
 													onChange={ ( e ) => {
 														source.onSelect( {
 															value: e.target
@@ -114,16 +114,16 @@ function BlockBindingsPanelMenuContent( {
 													name={
 														attribute + '-binding'
 													}
-													value={ args.key }
+													value={ item.key }
 													checked={
-														args.key === currentKey
+														item.key === currentKey
 													}
 												>
 													<Menu.ItemLabel>
-														{ args?.label }
+														{ item?.label }
 													</Menu.ItemLabel>
 													<Menu.ItemHelpText>
-														{ args?.value }
+														{ item?.value }
 													</Menu.ItemHelpText>
 												</Menu.RadioItem>
 											) ) }
@@ -169,7 +169,9 @@ function BlockBindingsAttribute( { attribute, binding, sources } ) {
 				>
 					{ isSourceInvalid
 						? __( 'Invalid source' )
-						: sources?.[ sourceName ]?.[ args?.key ]?.label ||
+						: sources?.[ sourceName ]?.data?.find(
+								( item ) => item.key === args?.key
+						  )?.label ||
 						  sources?.[ sourceName ]?.label ||
 						  sourceName }
 				</Text>
