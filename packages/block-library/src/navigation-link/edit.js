@@ -672,7 +672,9 @@ export default function NavigationLinkEdit( {
 				{ /* eslint-disable jsx-a11y/anchor-is-valid */ }
 				<a className={ classes }>
 					{ /* eslint-enable */ }
-					{ ! url && ! isEditingControl ? (
+					{ ! url &&
+					! isEditingControl &&
+					! metadata?.bindings?.url ? (
 						<div className="wp-block-navigation-link__placeholder-text">
 							<span>{ missingText }</span>
 						</div>
