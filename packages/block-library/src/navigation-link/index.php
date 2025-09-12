@@ -247,40 +247,7 @@ function render_block_core_navigation_link( $attributes, $content, $block ) {
 					'url'
 				);
 				if ( $resolved_url ) {
-					// Additional validation for bound URLs - ensure the entity is still valid
-					$binding_args = $url_binding['args'] ?? array();
-					$entity_id = $binding_args['id'] ?? null;
-					$entity_type = $binding_args['type'] ?? '';
-					$entity_kind = $binding_args['kind'] ?? '';
-
-					// Validate post types
-					if ( 'post-type' === $entity_kind  && $entity_id ) {
-						$post = get_post( $entity_id );
-						if ( $post ) {
-							$allowed_post_status = (array) apply_filters(
-								'render_block_core_navigation_link_allowed_post_status',
-								array( 'publish' ),
-								$attributes,
-								$block
-							);
-							if ( in_array( $post->post_status, $allowed_post_status, true ) ) {
-								$url = $resolved_url;
-							}
-						}
-					}
-					// Validate taxonomies
-					elseif ( 'taxonomy' === $entity_kind && $entity_id ) {
-						$term = get_term( $entity_id, $entity_type );
-						if ( ! is_wp_error( $term ) && $term ) {
-							// Check if taxonomy is publicly queryable
-							$taxonomy_object = get_taxonomy( $entity_type );
-							if ( $taxonomy_object && $taxonomy_object->publicly_queryable ) {
-								$url = $resolved_url;
-							} elseif ( current_user_can( 'read' ) ) {
-								$url = $resolved_url;
-							}
-						}
-					}
+					$url = $resolved_url;
 				}
 			}
 		}
