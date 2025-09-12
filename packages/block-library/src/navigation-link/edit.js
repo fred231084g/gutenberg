@@ -36,7 +36,11 @@ import { isURL, prependHTTP, safeDecodeURI } from '@wordpress/url';
 import { useState, useEffect, useRef, useCallback } from '@wordpress/element';
 import { __unstableStripHTML as stripHTML } from '@wordpress/dom';
 import { decodeEntities } from '@wordpress/html-entities';
-import { link as linkIcon, addSubmenu, edit } from '@wordpress/icons';
+import {
+	link as linkIcon,
+	addSubmenu,
+	linkOff as unlinkIcon,
+} from '@wordpress/icons';
 import { store as coreStore } from '@wordpress/core-data';
 import { useMergeRefs, usePrevious } from '@wordpress/compose';
 
@@ -313,7 +317,7 @@ function Controls( {
 						sprintf(
 							/* translators: %1$s is the entity type (e.g., "page", "post", "category"), %2$s is the same entity type for the second occurrence */
 							__(
-								'This URL is dynamically bound to the selected %1$s. Click the edit button to pick a different %2$s.'
+								'This URL is synced with the selected %1$s. Unlink to edit.'
 							),
 							getEntityTypeName(
 								attributes.type,
@@ -328,12 +332,12 @@ function Controls( {
 					suffix={
 						hasUrlBinding && (
 							<Button
+								className="navigation-link-block__control-unlink-button"
 								variant="tertiary"
 								size="small"
-								icon={ edit }
+								icon={ unlinkIcon }
 								onClick={ editBoundLink }
-								aria-label={ __( 'Pick different entity' ) }
-								style={ { minWidth: 'auto', padding: '4px' } }
+								aria-label={ __( 'Unlink and edit' ) }
 							/>
 						)
 					}
