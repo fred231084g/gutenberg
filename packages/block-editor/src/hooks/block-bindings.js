@@ -77,14 +77,13 @@ function BlockBindingsPanelMenuContent( {
 		<Menu placement={ isMobile ? 'bottom-start' : 'left-start' }>
 			{ Object.entries( sources )
 				.filter( ( [ , source ] ) => {
-					// Only show sources that have compatible data for this specific attribute
+					// Only show sources that have compatible data for this specific attribute.
 					const sourceDataItems = source.data?.filter(
 						( item ) => item?.type === attributeType
 					);
 					return sourceDataItems && sourceDataItems.length > 0;
 				} )
 				.map( ( [ sourceKey, source ] ) => {
-					// Always render the same structure, but conditionally show content
 					if ( source.mode === 'dropdown' ) {
 						return (
 							<Menu key={ sourceKey }>
@@ -297,7 +296,6 @@ export const BlockBindingsPanel = ( { name: blockName, metadata } ) => {
 							context,
 						} );
 
-						// Check if this source has any compatible data for any of the block's attributes
 						const hasCompatibleData = bindableAttributes.some(
 							( attribute ) => {
 								const _attributeType =
@@ -315,7 +313,6 @@ export const BlockBindingsPanel = ( { name: blockName, metadata } ) => {
 							}
 						);
 
-						// Only add source if it has compatible data for at least one attribute
 						if ( hasCompatibleData ) {
 							_sources[ sourceName ] = {
 								...editorUIResult,
