@@ -181,7 +181,7 @@ function Controls( {
 	attributes,
 	setAttributes,
 	setIsEditingControl,
-	lockUrlControls = false,
+	hasUrlBinding = false,
 	updateBlockBindings,
 } ) {
 	const { label, url, description, rel, opensInNewTab } = attributes;
@@ -239,7 +239,7 @@ function Controls( {
 				hasValue={ () => !! url }
 				label={ __( 'Link' ) }
 				onDeselect={ () => {
-					if ( ! lockUrlControls ) {
+					if ( ! hasUrlBinding ) {
 						setAttributes( { url: '' } );
 					}
 				} }
@@ -251,7 +251,7 @@ function Controls( {
 					label={ __( 'Link' ) }
 					value={ url ? safeDecodeURI( url ) : '' }
 					onChange={ ( urlValue ) => {
-						if ( lockUrlControls ) {
+						if ( hasUrlBinding ) {
 							return; // Prevent editing when URL is bound
 						}
 						setAttributes( {
@@ -260,16 +260,16 @@ function Controls( {
 					} }
 					autoComplete="off"
 					type="url"
-					disabled={ lockUrlControls }
+					disabled={ hasUrlBinding }
 					onFocus={ () => {
-						if ( lockUrlControls ) {
+						if ( hasUrlBinding ) {
 							return;
 						}
 						lastURLRef.current = url;
 						setIsEditingControl( true );
 					} }
 					onBlur={ () => {
-						if ( lockUrlControls ) {
+						if ( hasUrlBinding ) {
 							return;
 						}
 						// Defer the updateAttributes call to ensure entity connection isn't severed by accident.
@@ -280,8 +280,14 @@ function Controls( {
 						);
 						setIsEditingControl( false );
 					} }
+					help={
+						hasUrlBinding &&
+						__(
+							'This URL is dynamically bound to the selected page. Click "Edit as custom link" to make it editable.'
+						)
+					}
 				/>
-				{ lockUrlControls && (
+				{ hasUrlBinding && (
 					<>
 						<Button
 							variant="secondary"
@@ -291,11 +297,6 @@ function Controls( {
 						>
 							{ __( 'Edit as custom link' ) }
 						</Button>
-						<p className="components-base-control__help">
-							{ __(
-								'This URL is dynamically bound to the selected page. Click "Edit as custom link" to make it editable.'
-							) }
-						</p>
 					</>
 				) }
 			</ToolsPanelItem>
@@ -449,7 +450,7 @@ export default function NavigationLinkEdit( {
 	// URL binding logic
 	const { updateBlockBindings } = useBlockBindingsUtils( clientId );
 
-	const { lockUrlControls = false } = useSelect(
+	const { hasUrlBinding = false } = useSelect(
 		( select ) => {
 			if ( ! isSelected ) {
 				return {};
@@ -460,7 +461,7 @@ export default function NavigationLinkEdit( {
 			);
 
 			return {
-				lockUrlControls:
+				hasUrlBinding:
 					!! metadata?.bindings?.url &&
 					!! id && // Only lock if there's an ID (not a custom link)
 					! blockBindingsSource?.canUserEditValue?.( {
@@ -636,7 +637,7 @@ export default function NavigationLinkEdit( {
 		<>
 			<BlockControls>
 				<ToolbarGroup>
-					{ ! lockUrlControls && (
+					{ ! hasUrlBinding && (
 						<ToolbarButton
 							name="link"
 							icon={ linkIcon }
@@ -664,7 +665,7 @@ export default function NavigationLinkEdit( {
 					attributes={ attributes }
 					setAttributes={ setAttributes }
 					setIsEditingControl={ setIsEditingControl }
-					lockUrlControls={ lockUrlControls }
+					hasUrlBinding={ hasUrlBinding }
 					updateBlockBindings={ updateBlockBindings }
 				/>
 			</InspectorControls>
