@@ -332,12 +332,11 @@ function Controls( {
 					suffix={
 						hasUrlBinding && (
 							<Button
-								className="navigation-link-block__control-unlink-button"
 								variant="tertiary"
-								size="small"
 								icon={ unlinkIcon }
 								onClick={ editBoundLink }
 								aria-label={ __( 'Unlink and edit' ) }
+								__next40pxDefaultSize
 							/>
 						)
 					}

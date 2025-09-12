@@ -491,11 +491,10 @@ class URLInput extends Component {
 			suffix: isLocked ? (
 				<Button
 					variant="tertiary"
-					size="small"
 					icon={ linkOff }
 					onClick={ this.handleUnlink }
 					aria-label={ __( 'Unlink' ) }
-					style={ { minWidth: 'auto', padding: '4px' } }
+					__next40pxDefaultSize
 				/>
 			) : (
 				this.props.suffix
