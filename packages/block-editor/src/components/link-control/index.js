@@ -142,6 +142,7 @@ function LinkControl( {
 	hasRichPreviews = false,
 	hasTextControl = false,
 	renderControlBottom = null,
+	isEntity = false,
 } ) {
 	if ( withCreateSuggestion === undefined && createSuggestion ) {
 		withCreateSuggestion = true;
@@ -406,6 +407,7 @@ function LinkControl( {
 								createSuggestionButtonText
 							}
 							hideLabelFromVision={ ! showTextControl }
+							isEntity={ isEntity }
 							suffix={
 								showActions ? undefined : (
 									<InputControlSuffixWrapper variant="control">

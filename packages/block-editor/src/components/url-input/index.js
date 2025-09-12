@@ -17,6 +17,7 @@ import {
 	withSpokenMessages,
 	Popover,
 } from '@wordpress/components';
+import { linkOff } from '@wordpress/icons';
 import {
 	compose,
 	debounce,
@@ -51,6 +52,7 @@ class URLInput extends Component {
 		this.selectLink = this.selectLink.bind( this );
 		this.handleOnClick = this.handleOnClick.bind( this );
 		this.bindSuggestionNode = this.bindSuggestionNode.bind( this );
+		this.handleUnlink = this.handleUnlink.bind( this );
 		this.autocompleteRef = props.autocompleteRef || createRef();
 		this.inputRef = createRef();
 		this.updateSuggestions = debounce(
@@ -69,13 +71,22 @@ class URLInput extends Component {
 			selectedSuggestion: null,
 			suggestionsListboxId: '',
 			suggestionOptionIdPrefix: '',
+			isLocked: props.isEntity || false,
 		};
 	}
 
 	componentDidUpdate( prevProps ) {
 		const { showSuggestions, selectedSuggestion } = this.state;
-		const { value, __experimentalShowInitialSuggestions = false } =
-			this.props;
+		const {
+			value,
+			__experimentalShowInitialSuggestions = false,
+			isEntity,
+		} = this.props;
+
+		// Update locked state when isEntity prop changes
+		if ( prevProps.isEntity !== isEntity ) {
+			this.setState( { isLocked: isEntity } );
+		}
 
 		// Only have to worry about scrolling selected suggestion into view
 		// when already expanded.
@@ -112,6 +123,17 @@ class URLInput extends Component {
 	componentWillUnmount() {
 		this.suggestionsRequest?.cancel?.();
 		this.suggestionsRequest = null;
+	}
+
+	handleUnlink() {
+		// Clear the internal state and unlock the field
+		this.setState( { isLocked: false } );
+
+		// Call onChange with empty value to clear the link
+		const { onChange } = this.props;
+		if ( onChange ) {
+			onChange( '' );
+		}
 	}
 
 	bindSuggestionNode( index ) {
@@ -445,15 +467,16 @@ class URLInput extends Component {
 			hideLabelFromVision,
 		};
 
+		const { isLocked } = this.state;
 		const inputProps = {
 			id: inputId,
 			value,
 			required: true,
 			type: 'text',
-			onChange: this.onChange,
-			onFocus: this.onFocus,
+			onChange: isLocked ? () => {} : this.onChange, // Disable onChange when locked
+			onFocus: isLocked ? () => {} : this.onFocus, // Disable onFocus when locked
 			placeholder,
-			onKeyDown: this.onKeyDown,
+			onKeyDown: isLocked ? () => {} : this.onKeyDown, // Disable onKeyDown when locked
 			role: 'combobox',
 			'aria-label': label ? undefined : __( 'URL' ), // Ensure input always has an accessible label
 			'aria-expanded': showSuggestions,
@@ -464,7 +487,19 @@ class URLInput extends Component {
 					? `${ suggestionOptionIdPrefix }-${ selectedSuggestion }`
 					: undefined,
 			ref: this.inputRef,
-			suffix: this.props.suffix,
+			disabled: isLocked,
+			suffix: isLocked ? (
+				<Button
+					variant="tertiary"
+					size="small"
+					icon={ linkOff }
+					onClick={ this.handleUnlink }
+					aria-label={ __( 'Unlink' ) }
+					style={ { minWidth: 'auto', padding: '4px' } }
+				/>
+			) : (
+				this.props.suffix
+			),
 		};
 
 		if ( renderControl ) {

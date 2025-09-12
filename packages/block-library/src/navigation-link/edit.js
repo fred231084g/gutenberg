@@ -680,18 +680,16 @@ export default function NavigationLinkEdit( {
 		<>
 			<BlockControls>
 				<ToolbarGroup>
-					{ ! hasUrlBinding && (
-						<ToolbarButton
-							name="link"
-							icon={ linkIcon }
-							title={ __( 'Link' ) }
-							shortcut={ displayShortcut.primary( 'k' ) }
-							onClick={ ( event ) => {
-								setIsLinkOpen( true );
-								setOpenedBy( event.currentTarget );
-							} }
-						/>
-					) }
+					<ToolbarButton
+						name="link"
+						icon={ linkIcon }
+						title={ __( 'Link' ) }
+						shortcut={ displayShortcut.primary( 'k' ) }
+						onClick={ ( event ) => {
+							setIsLinkOpen( true );
+							setOpenedBy( event.currentTarget );
+						} }
+					/>
 					{ ! isAtMaxNesting && (
 						<ToolbarButton
 							name="submenu"
@@ -794,6 +792,7 @@ export default function NavigationLinkEdit( {
 							ref={ linkUIref }
 							clientId={ clientId }
 							link={ attributes }
+							isEntity={ hasUrlBinding }
 							onClose={ () => {
 								// If there is no link then remove the auto-inserted block.
 								// This avoids empty blocks which can provided a poor UX.
