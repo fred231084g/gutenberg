@@ -13,7 +13,6 @@ import {
 	__experimentalToolsPanelItem as ToolsPanelItem,
 	Button,
 	CheckboxControl,
-	SelectControl,
 	TextControl,
 	TextareaControl,
 	ToolbarButton,
@@ -463,6 +462,7 @@ export default function NavigationLinkEdit( {
 			return {
 				lockUrlControls:
 					!! metadata?.bindings?.url &&
+					!! id && // Only lock if there's an ID (not a custom link)
 					! blockBindingsSource?.canUserEditValue?.( {
 						select,
 						context,
@@ -470,7 +470,7 @@ export default function NavigationLinkEdit( {
 					} ),
 			};
 		},
-		[ context, isSelected, metadata?.bindings?.url ]
+		[ context, isSelected, metadata?.bindings?.url, id ]
 	);
 
 	const [ isInvalid, isDraft ] = useIsInvalidLink(
@@ -667,46 +667,6 @@ export default function NavigationLinkEdit( {
 					lockUrlControls={ lockUrlControls }
 					updateBlockBindings={ updateBlockBindings }
 				/>
-
-				{ /* Simple URL Binding Control */ }
-				<ToolsPanel
-					label={ __( 'Dynamic Content' ) }
-					dropdownMenuProps={ useToolsPanelDropdownMenuProps() }
-				>
-					<ToolsPanelItem
-						hasValue={ () => !! metadata?.bindings?.url }
-						label={ __( 'URL Source' ) }
-						onDeselect={ () =>
-							updateBlockBindings( { url: undefined } )
-						}
-					>
-						<SelectControl
-							__nextHasNoMarginBottom
-							__next40pxDefaultSize
-							label={ __( 'URL Source' ) }
-							value={ metadata?.bindings?.url?.source || '' }
-							options={ [
-								{ label: __( 'Manual URL' ), value: '' },
-								{
-									label: __( 'Current Post URL' ),
-									value: 'core/entity-url',
-								},
-							] }
-							onChange={ ( source ) => {
-								if ( source ) {
-									updateBlockBindings( {
-										url: {
-											source,
-											args: {},
-										},
-									} );
-								} else {
-									updateBlockBindings( { url: undefined } );
-								}
-							} }
-						/>
-					</ToolsPanelItem>
-				</ToolsPanel>
 			</InspectorControls>
 			<div { ...blockProps }>
 				{ /* eslint-disable jsx-a11y/anchor-is-valid */ }

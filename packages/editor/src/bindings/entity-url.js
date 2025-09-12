@@ -46,7 +46,9 @@ export default {
 		};
 	},
 	canUserEditValue() {
-		// Read-only since it's derived from post data
+		// This binding source provides read-only URLs derived from entity data
+		// Users cannot manually edit these values as they are automatically
+		// generated from the linked post/term's permalink
 		return false;
 	},
 };
