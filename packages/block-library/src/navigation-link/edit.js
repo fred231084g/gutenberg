@@ -17,9 +17,10 @@ import {
 	TextareaControl,
 	ToolbarButton,
 	ToolbarGroup,
+	__experimentalInputControl as InputControl,
 } from '@wordpress/components';
 import { displayShortcut, isKeyboardEvent } from '@wordpress/keycodes';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import {
 	BlockControls,
 	InspectorControls,
@@ -35,7 +36,7 @@ import { isURL, prependHTTP, safeDecodeURI } from '@wordpress/url';
 import { useState, useEffect, useRef, useCallback } from '@wordpress/element';
 import { __unstableStripHTML as stripHTML } from '@wordpress/dom';
 import { decodeEntities } from '@wordpress/html-entities';
-import { link as linkIcon, addSubmenu } from '@wordpress/icons';
+import { link as linkIcon, addSubmenu, edit } from '@wordpress/icons';
 import { store as coreStore } from '@wordpress/core-data';
 import { useMergeRefs, usePrevious } from '@wordpress/compose';
 
@@ -172,6 +173,35 @@ function getMissingText( type ) {
 	return missingText;
 }
 
+function getEntityTypeName( type, kind ) {
+	// Handle taxonomy entities
+	if ( kind === 'taxonomy' ) {
+		switch ( type ) {
+			case 'category':
+				return __( 'category' );
+			case 'tag':
+				return __( 'tag' );
+			default:
+				return __( 'term' );
+		}
+	}
+
+	// Handle post type entities
+	if ( kind === 'post-type' || ! kind ) {
+		switch ( type ) {
+			case 'post':
+				return __( 'post' );
+			case 'page':
+				return __( 'page' );
+			default:
+				return __( 'item' );
+		}
+	}
+
+	// Fallback
+	return __( 'entity' );
+}
+
 /*
  * Warning, this duplicated in
  * packages/block-library/src/navigation-submenu/edit.js
@@ -188,17 +218,15 @@ function Controls( {
 	const lastURLRef = useRef( url );
 	const dropdownMenuProps = useToolsPanelDropdownMenuProps();
 
-	// Function to convert from bound to custom link
-	const convertToCustomLink = () => {
+	// Function to edit the bound link - removes binding and clears url/id to allow picking new entity
+	const editBoundLink = () => {
 		// Remove the binding
 		updateBlockBindings( { url: undefined } );
 
-		// Remove the id attribute and clear the url
+		// Clear url and id to allow picking a new entity (keep type and kind)
 		setAttributes( {
+			url: undefined,
 			id: undefined,
-			url: '',
-			type: undefined,
-			kind: undefined,
 		} );
 	};
 	return (
@@ -245,7 +273,7 @@ function Controls( {
 				} }
 				isShownByDefault
 			>
-				<TextControl
+				<InputControl
 					__nextHasNoMarginBottom
 					__next40pxDefaultSize
 					label={ __( 'Link' ) }
@@ -282,23 +310,34 @@ function Controls( {
 					} }
 					help={
 						hasUrlBinding &&
-						__(
-							'This URL is dynamically bound to the selected page. Click "Edit as custom link" to make it editable.'
+						sprintf(
+							/* translators: %1$s is the entity type (e.g., "page", "post", "category"), %2$s is the same entity type for the second occurrence */
+							__(
+								'This URL is dynamically bound to the selected %1$s. Click the edit button to pick a different %2$s.'
+							),
+							getEntityTypeName(
+								attributes.type,
+								attributes.kind
+							),
+							getEntityTypeName(
+								attributes.type,
+								attributes.kind
+							)
+						)
+					}
+					suffix={
+						hasUrlBinding && (
+							<Button
+								variant="tertiary"
+								size="small"
+								icon={ edit }
+								onClick={ editBoundLink }
+								aria-label={ __( 'Pick different entity' ) }
+								style={ { minWidth: 'auto', padding: '4px' } }
+							/>
 						)
 					}
 				/>
-				{ hasUrlBinding && (
-					<>
-						<Button
-							variant="secondary"
-							size="small"
-							onClick={ convertToCustomLink }
-							style={ { marginTop: '8px' } }
-						>
-							{ __( 'Edit as custom link' ) }
-						</Button>
-					</>
-				) }
 			</ToolsPanelItem>
 
 			<ToolsPanelItem
