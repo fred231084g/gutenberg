@@ -34,8 +34,14 @@ function gutenberg_block_bindings_entity_url_get_value( array $source_args, $blo
 			return null;
 		}
 
-		// Check if post is publicly viewable
-		if ( ! is_post_publicly_viewable( $post ) && ! current_user_can( 'read_post', $entity_id ) ) {
+		// Use the same post status validation as Navigation Link block
+		$allowed_post_status = (array) apply_filters(
+			'render_block_core_navigation_link_allowed_post_status',
+			array( 'publish' ),
+			array( 'id' => $entity_id, 'type' => $type, 'kind' => $kind ),
+			$block_instance
+		);
+		if ( ! in_array( $post->post_status, $allowed_post_status, true ) ) {
 			return null;
 		}
 
