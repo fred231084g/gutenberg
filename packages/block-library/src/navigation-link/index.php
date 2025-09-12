@@ -254,7 +254,7 @@ function render_block_core_navigation_link( $attributes, $content, $block ) {
 					$entity_kind = $binding_args['kind'] ?? '';
 
 					// Validate post types
-					if ( ( 'post-type' === $entity_kind || 'post' === $entity_type || 'page' === $entity_type ) && $entity_id ) {
+					if ( 'post-type' === $entity_kind  && $entity_id ) {
 						$post = get_post( $entity_id );
 						if ( $post ) {
 							$allowed_post_status = (array) apply_filters(

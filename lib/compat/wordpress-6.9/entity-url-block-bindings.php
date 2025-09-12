@@ -28,7 +28,7 @@ function gutenberg_block_bindings_entity_url_get_value( array $source_args, $blo
 	$kind      = $source_args['kind'] ?? '';
 
 	// Handle post types
-	if ( 'post-type' === $kind || 'post' === $type || 'page' === $type ) {
+	if ( 'post-type' === $kind ) {
 		$post = get_post( $entity_id );
 		if ( ! $post ) {
 			return null;
