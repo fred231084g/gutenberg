@@ -34,17 +34,6 @@ function gutenberg_block_bindings_entity_url_get_value( array $source_args, $blo
 			return null;
 		}
 
-		// Use the same post status validation as Navigation Link block
-		$allowed_post_status = (array) apply_filters(
-			'render_block_core_navigation_link_allowed_post_status',
-			array( 'publish' ),
-			array( 'id' => $entity_id, 'type' => $type, 'kind' => $kind ),
-			$block_instance
-		);
-		if ( ! in_array( $post->post_status, $allowed_post_status, true ) ) {
-			return null;
-		}
-
 		return esc_url( get_permalink( $entity_id ) );
 	}
 
@@ -53,14 +42,6 @@ function gutenberg_block_bindings_entity_url_get_value( array $source_args, $blo
 		$term = get_term( $entity_id, $type );
 		if ( is_wp_error( $term ) || ! $term ) {
 			return null;
-		}
-
-		// Check if taxonomy is publicly queryable
-		$taxonomy_object = get_taxonomy( $type );
-		if ( ! $taxonomy_object || ! $taxonomy_object->publicly_queryable ) {
-			if ( ! current_user_can( 'read' ) ) {
-				return null;
-			}
 		}
 
 		return esc_url( get_term_link( $term ) );
