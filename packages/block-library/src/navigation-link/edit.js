@@ -800,7 +800,11 @@ export default function NavigationLinkEdit( {
 									updateBlockBindings( {
 										url: {
 											source: 'core/entity-url',
-											args: {},
+											args: {
+												id: updatedValue.id,
+												type: updatedValue.type,
+												kind: updatedValue.kind,
+											},
 										},
 									} );
 								}

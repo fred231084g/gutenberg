@@ -7,7 +7,6 @@ import { store as coreDataStore } from '@wordpress/core-data';
 export default {
 	name: 'core/entity-url',
 	label: __( 'Entity URL' ),
-	usesContext: [ 'postId', 'postType' ],
 	getValues( { select, clientId } ) {
 		const { getBlockAttributes } = select( 'core/block-editor' );
 
