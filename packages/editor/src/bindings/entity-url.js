@@ -26,7 +26,7 @@ export default {
 		let url = '';
 
 		// Handle post types
-		if ( kind === 'post-type' || type === 'post' || type === 'page' ) {
+		if ( kind === 'post-type' ) {
 			const post = getEntityRecord(
 				'postType',
 				type || 'post',
@@ -36,7 +36,14 @@ export default {
 		}
 		// Handle taxonomies
 		else if ( kind === 'taxonomy' ) {
-			const term = getEntityRecord( 'taxonomy', type, linkedPostId );
+			// Convert 'tag' back to 'post_tag' for API calls
+			// See update-attributes.js line 166 for the reverse conversion
+			const taxonomySlug = type === 'tag' ? 'post_tag' : type;
+			const term = getEntityRecord(
+				'taxonomy',
+				taxonomySlug,
+				linkedPostId
+			);
 			url = term?.link || '';
 		}
 

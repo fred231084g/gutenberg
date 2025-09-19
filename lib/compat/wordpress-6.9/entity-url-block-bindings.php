@@ -39,7 +39,10 @@ function gutenberg_block_bindings_entity_url_get_value( array $source_args, $blo
 
 	// Handle taxonomies
 	if ( 'taxonomy' === $kind ) {
-		$term = get_term( $entity_id, $type );
+		// Convert 'tag' back to 'post_tag' for API calls
+		// See update-attributes.js line 166 for the reverse conversion
+		$taxonomy_slug = ( 'tag' === $type ) ? 'post_tag' : $type;
+		$term = get_term( $entity_id, $taxonomy_slug );
 		if ( is_wp_error( $term ) || ! $term ) {
 			return null;
 		}
