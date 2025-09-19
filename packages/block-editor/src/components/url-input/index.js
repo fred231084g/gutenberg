@@ -446,6 +446,7 @@ class URLInput extends Component {
 			__experimentalRenderControl: renderControl,
 			value = '',
 			hideLabelFromVision = false,
+			help = null,
 		} = this.props;
 
 		const {
@@ -465,6 +466,7 @@ class URLInput extends Component {
 				'is-full-width': isFullWidth,
 			} ),
 			hideLabelFromVision,
+			help,
 		};
 
 		const { isLocked } = this.state;
