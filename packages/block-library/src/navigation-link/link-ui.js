@@ -66,7 +66,7 @@ export function getSuggestionsQuery( type, kind ) {
 }
 
 function UnforwardedLinkUI( props, ref ) {
-	const { label, url, opensInNewTab, type, kind } = props.link;
+	const { label, url, opensInNewTab, type, kind, id } = props.link;
 	const { isEntity = false } = props;
 	const postType = type || 'page';
 
@@ -86,8 +86,11 @@ function UnforwardedLinkUI( props, ref ) {
 			url,
 			opensInNewTab,
 			title: label && stripHTML( label ),
+			kind,
+			type,
+			id,
 		} ),
-		[ label, opensInNewTab, url ]
+		[ label, opensInNewTab, url, kind, type, id ]
 	);
 
 	const handlePageCreated = ( pageLink ) => {
