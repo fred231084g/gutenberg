@@ -21,7 +21,7 @@ import { ENTER } from '@wordpress/keycodes';
 import { isShallowEqualObjects } from '@wordpress/is-shallow-equal';
 import { useSelect, useDispatch } from '@wordpress/data';
 import { store as preferencesStore } from '@wordpress/preferences';
-import { keyboardReturn } from '@wordpress/icons';
+import { keyboardReturn, linkOff } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -409,7 +409,6 @@ function LinkControl( {
 							onCreateSuggestion={ createPage }
 							onChange={ setInternalURLInputValue }
 							onSelect={ handleSelectSuggestion }
-							onUnlink={ handleUnlink }
 							showInitialSuggestions={ showInitialSuggestions }
 							allowDirectEntry={ ! noDirectEntry }
 							showSuggestions={ showSuggestions }
@@ -420,8 +419,22 @@ function LinkControl( {
 							}
 							hideLabelFromVision={ ! showTextControl }
 							isEntity={ isEntity }
-							suffix={
-								showActions ? undefined : (
+							suffix={ ( () => {
+								if ( isEntity ) {
+									return (
+										<Button
+											variant="tertiary"
+											icon={ linkOff }
+											onClick={ handleUnlink }
+											aria-label={ __( 'Unlink' ) }
+											__next40pxDefaultSize
+										/>
+									);
+								}
+								if ( showActions ) {
+									return undefined;
+								}
+								return (
 									<InputControlSuffixWrapper variant="control">
 										<Button
 											onClick={
@@ -434,8 +447,8 @@ function LinkControl( {
 											size="small"
 										/>
 									</InputControlSuffixWrapper>
-								)
-							}
+								);
+							} )() }
 						/>
 					</div>
 					{ errorMessage && (
