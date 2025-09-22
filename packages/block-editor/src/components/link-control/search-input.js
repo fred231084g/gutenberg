@@ -3,6 +3,8 @@
  */
 import { forwardRef, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
+import { Button } from '@wordpress/components';
+import { linkOff } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -32,6 +34,7 @@ const LinkControlSearchInput = forwardRef(
 			onCreateSuggestion = noop,
 			onChange = noop,
 			onSelect = noop,
+			onUnlink = noop,
 			showSuggestions = true,
 			renderSuggestions = ( props ) => (
 				<LinkControlSearchResults { ...props } />
@@ -133,6 +136,19 @@ const LinkControlSearchInput = forwardRef(
 			  )
 			: null;
 
+		// Handle suffix - show unlink button for entities, otherwise use provided suffix
+		const inputSuffix = isEntity ? (
+			<Button
+				variant="tertiary"
+				icon={ linkOff }
+				onClick={ onUnlink }
+				aria-label={ __( 'Unlink' ) }
+				__next40pxDefaultSize
+			/>
+		) : (
+			suffix
+		);
+
 		return (
 			<div className="block-editor-link-control__search-input-container">
 				<URLInput
@@ -165,8 +181,8 @@ const LinkControlSearchInput = forwardRef(
 						}
 					} }
 					ref={ ref }
-					suffix={ suffix }
-					isEntity={ isEntity }
+					suffix={ inputSuffix }
+					disabled={ isEntity }
 					help={ helpText }
 				/>
 				{ children }

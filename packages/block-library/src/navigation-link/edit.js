@@ -791,7 +791,6 @@ export default function NavigationLinkEdit( {
 							ref={ linkUIref }
 							clientId={ clientId }
 							link={ attributes }
-							isEntity={ hasUrlBinding }
 							onClose={ () => {
 								// If there is no link then remove the auto-inserted block.
 								// This avoids empty blocks which can provided a poor UX.

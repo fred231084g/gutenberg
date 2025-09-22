@@ -108,6 +108,7 @@ import deprecated from '@wordpress/deprecated';
  * @property {boolean=}                   hasTextControl             Whether to add a text field to the UI to update the value.title.
  * @property {string|Function|undefined}  createSuggestionButtonText The text to use in the button that calls createSuggestion.
  * @property {Function}                   renderControlBottom        Optional controls to be rendered at the bottom of the component.
+ * @property {boolean=}                   handleEntities             Whether to handle entity links (links with ID). When true and a link has an ID, the input will be disabled and show an unlink button.
  */
 
 const noop = () => {};
@@ -142,7 +143,7 @@ function LinkControl( {
 	hasRichPreviews = false,
 	hasTextControl = false,
 	renderControlBottom = null,
-	isEntity = false,
+	handleEntities = false,
 } ) {
 	if ( withCreateSuggestion === undefined && createSuggestion ) {
 		withCreateSuggestion = true;
@@ -197,6 +198,9 @@ function LinkControl( {
 		setInternalTextInputValue,
 		createSetInternalSettingValueHandler,
 	] = useInternalValue( value );
+
+	// Compute isEntity internally based on handleEntities prop and presence of ID
+	const isEntity = handleEntities && !! internalControlValue?.id;
 
 	const valueHasChanges =
 		value && ! isShallowEqualObjects( internalControlValue, value );
@@ -337,6 +341,13 @@ function LinkControl( {
 		onCancel?.();
 	};
 
+	const handleUnlink = () => {
+		// Clear the internal state to remove the ID and re-enable the field
+		// The user will need to submit to commit this change
+		const { id, ...restValue } = internalControlValue;
+		setInternalControlValue( { ...restValue, url: '' } );
+	};
+
 	const currentUrlInputValue =
 		propInputValue || internalControlValue?.url || '';
 
@@ -398,6 +409,7 @@ function LinkControl( {
 							onCreateSuggestion={ createPage }
 							onChange={ setInternalURLInputValue }
 							onSelect={ handleSelectSuggestion }
+							onUnlink={ handleUnlink }
 							showInitialSuggestions={ showInitialSuggestions }
 							allowDirectEntry={ ! noDirectEntry }
 							showSuggestions={ showSuggestions }
