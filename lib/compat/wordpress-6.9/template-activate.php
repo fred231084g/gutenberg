@@ -84,6 +84,8 @@ function gutenberg_pre_get_block_templates( $output, $query, $template_type ) {
 		}
 		if ( empty( $output ) ) {
 			$output = null;
+		} else {
+			$output = apply_filters( 'get_block_templates', $output, $query, $template_type );
 		}
 	}
 	return $output;
