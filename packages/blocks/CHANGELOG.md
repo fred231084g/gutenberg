@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Deprecations
+
+-   `getFieldsList` property in block bindings sources is now deprecated. Use `editorUI` instead for better UI integration and more flexibility.
+
 ## 15.4.0 (2025-09-17)
 
 ## 15.3.0 (2025-09-03)
