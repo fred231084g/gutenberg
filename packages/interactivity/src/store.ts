@@ -2,6 +2,7 @@
  * Internal dependencies
  */
 import { proxifyState, proxifyStore, deepMerge } from './proxies';
+import { PENDING_GETTER } from './proxies/state';
 /**
  * External dependencies
  */
@@ -272,6 +273,7 @@ export const parseServerData = ( dom = document ) => {
 export const populateServerData = ( data?: {
 	state?: Record< string, unknown >;
 	config?: Record< string, unknown >;
+	derivedStatePropsAccessed?: Record< string, string[] >;
 } ) => {
 	if ( isPlainObject( data?.state ) ) {
 		Object.entries( data!.state ).forEach( ( [ namespace, state ] ) => {
@@ -285,11 +287,30 @@ export const populateServerData = ( data?: {
 			storeConfigs.set( namespace, config );
 		} );
 	}
+	if ( isPlainObject( data?.derivedStatePropsAccessed ) ) {
+		Object.entries( data!.derivedStatePropsAccessed ).forEach(
+			( [ namespace, paths ] ) => {
+				const st = store< any >(
+					namespace,
+					{},
+					{ lock: universalUnlock }
+				);
+				paths.forEach( ( path ) => {
+					const pathParts = path.split( '.' );
+					const prop = pathParts.splice( -1, 1 )[ 0 ];
+					const parent = pathParts.reduce(
+						( prev, key ) => prev[ key ],
+						st
+					);
+					if ( isPlainObject( parent[ prop ] ) ) {
+						parent[ prop ] = PENDING_GETTER;
+					}
+				} );
+			}
+		);
+	}
 };
 
 // Parse and populate the initial state and config.
 const data = parseServerData();
 populateServerData( data );
-
-// TODO: move this to another file once the iAPI initialization is refactored.
-export const derivedStatePropsAccessed = data?.derivedStatePropsAccessed || {};
