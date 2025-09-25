@@ -104,7 +104,7 @@ function BlockBindingsPanelMenuContent( {
 													source.isSelected?.( {
 														item,
 														binding,
-													} ) ||
+													} ) ??
 													// Deprecate key dependency in 7.0.
 													item.key ===
 														binding?.args?.key;
@@ -137,7 +137,7 @@ function BlockBindingsPanelMenuContent( {
 												source.isSelected?.( {
 													item,
 													binding,
-												} ) ||
+												} ) ??
 												// Deprecate key dependency in 7.0.
 												item.key === binding?.args?.key
 											}
