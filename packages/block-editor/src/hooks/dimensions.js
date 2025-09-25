@@ -152,8 +152,7 @@ export function hasDimensionsSupport( blockName, feature = 'any' ) {
 		return !! (
 			support?.aspectRatio ||
 			!! support?.minHeight ||
-			!! support?.width ||
-			!! support?.height
+			!! support?.width
 		);
 	}
 
@@ -162,13 +161,13 @@ export function hasDimensionsSupport( blockName, feature = 'any' ) {
 
 export default {
 	useBlockProps,
-	attributeKeys: [ 'minHeight', 'width', 'height', 'style' ],
+	attributeKeys: [ 'minHeight', 'width', 'style' ],
 	hasSupport( name ) {
 		return hasDimensionsSupport( name );
 	},
 };
 
-function useBlockProps( { name, width, height, minHeight, style } ) {
+function useBlockProps( { name, width, minHeight, style } ) {
 	if (
 		! hasDimensionsSupport( name ) ||
 		shouldSkipSerialization( name, DIMENSIONS_SUPPORT_KEY )
@@ -203,12 +202,6 @@ function useBlockProps( { name, width, height, minHeight, style } ) {
 		! shouldSkipSerialization( name, DIMENSIONS_SUPPORT_KEY, 'width' )
 	) {
 		inlineStyleOverrides.width = style?.dimensions?.width;
-	}
-	if (
-		( height || style?.dimensions?.height ) &&
-		! shouldSkipSerialization( name, DIMENSIONS_SUPPORT_KEY, 'height' )
-	) {
-		inlineStyleOverrides.height = style?.dimensions?.height;
 	}
 
 	return {
