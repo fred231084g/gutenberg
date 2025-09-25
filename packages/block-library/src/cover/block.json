@@ -125,8 +125,7 @@
 			"enableContrastChecker": false
 		},
 		"dimensions": {
-			"aspectRatio": true,
-			"width": true
+			"aspectRatio": true
 		},
 		"typography": {
 			"fontSize": true,
